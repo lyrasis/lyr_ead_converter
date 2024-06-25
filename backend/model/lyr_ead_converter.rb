@@ -157,6 +157,7 @@ class EADConverter < Converter
           title = Nokogiri::XML::DocumentFragment.parse(inner_xml.strip)
           title.xpath(".//unitdate").remove
           obj.title = format_content( title.to_xml(:encoding => 'utf-8') ) if obj.title.nil? || obj.title.empty?
+          obj.title.gsub!(/,$/,'')
         end
       end
     end
@@ -478,7 +479,7 @@ class EADConverter < Converter
     end
 
 
-    %w(accessrestrict accessrestrict/legalstatus
+    %w(accessrestrict/legalstatus
        accruals acqinfo altformavail appraisal arrangement
        bioghist custodhist
        fileplan odd otherfindaid originalsloc phystech
@@ -502,6 +503,38 @@ class EADConverter < Converter
           }
         } do |note|
           set ancestor(:resource, :archival_object), :notes, note
+        end
+      end
+    end
+    
+	%w(accessrestrict).each do |note| with note do |node|
+        content = inner_xml.tap {|xml|
+          xml.sub!(/<head>.*?<\/head>/m, '')
+          # xml.sub!(/<list [^>]*>.*?<\/list>/m, '')
+          # xml.sub!(/<chronlist [^>]*>.*<\/chronlist>/m, '')
+        }
+        if att('type') == 'closed'
+          local_type = 'Restricted'
+        end
+
+        make :note_multipart, {
+          :type => node.name,
+          :persistent_id => att('id'),
+          :publish => att('audience') != 'internal',
+          :subnotes => {
+            :publish => att('audience') != 'internal',
+            'jsonmodel_type' => 'note_text',
+            'content' => format_content( content )
+          },
+          :rights_restriction => {
+            :local_access_restriction_type => [ local_type ]
+          }
+        } do |note|
+          set ancestor(:resource, :archival_object), :notes, note
+          if (att('type') == 'review' || att('type') == 'closed')
+            set ancestor(:resource), :restrictions, true
+            set ancestor(:archival_object), :restrictions_apply, true
+          end
         end
       end
     end
