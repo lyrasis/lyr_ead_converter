@@ -157,6 +157,7 @@ class EADConverter < Converter
           title = Nokogiri::XML::DocumentFragment.parse(inner_xml.strip)
           title.xpath(".//unitdate").remove
           obj.title = format_content( title.to_xml(:encoding => 'utf-8') ) if obj.title.nil? || obj.title.empty?
+          obj.title.gsub!(/,\s*$/,'')
         end
       end
     end
