@@ -54,8 +54,8 @@ class EADConverter < Converter
     with 'ead' do |*|
       make :resource, {
         :publish => att('audience') != 'internal',
-        :finding_aid_language => 'und',
-        :finding_aid_script => 'Zyyy'
+        :finding_aid_language => 'eng',
+        :finding_aid_script => 'Latn'
       }
     end
 
@@ -216,7 +216,7 @@ class EADConverter < Converter
               :language_and_script => {
                 'jsonmodel_type' => 'language_and_script',
                 'language' => langcode.to_s,
-                'script' => script ? script.to_s : nil
+                'script' => script ? script.to_s : 'Latn'
               }
             } do |lang|
               set obj, :lang_materials, lang
@@ -228,7 +228,8 @@ class EADConverter < Converter
             :jsonmodel_type => 'lang_material',
             :language_and_script => {
               'jsonmodel_type' => 'language_and_script',
-              'language' => 'und'
+              'language' => 'eng',
+              'script' => 'Latn'
             }
           } do |lang|
             set obj, :lang_materials, lang
@@ -258,14 +259,15 @@ class EADConverter < Converter
       end
     end
 
-    # If we've gotten this far and still haven't hit a <langmaterial><language> we must assign an undetermined language value
+    # If we've gotten this far and still haven't hit a <langmaterial><language> we must assign an undetermined language value -- Lyrasis defaults to English
     with "archdesc/did" do |e|
       if context_obj['jsonmodel_type'] == 'resource' && inner_xml.include?('<langmaterial') == false
         make :lang_material, {
           :jsonmodel_type => 'lang_material',
           :language_and_script => {
             'jsonmodel_type' => 'language_and_script',
-            'language' => 'und'
+            'language' => 'eng',
+            'script' => 'Latn'
           }
         } do |lang|
           set ancestor(:resource), :lang_materials, lang
@@ -855,7 +857,7 @@ class EADConverter < Converter
         set :finding_aid_language_note, format_content( langusage.inner_text )
       # if no <langusage>, set language to undetermined
       else
-        set :finding_aid_language, 'und'
+        set :finding_aid_language, 'eng'
       end
     end
 
