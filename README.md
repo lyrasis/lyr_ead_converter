@@ -8,3 +8,5 @@ Current differences from stock ASpace:
   * Removes trailing comma + whitespace from titles
   * Finding aid language and script default to English/Latin
   * Language of materials defaults to English/Latin
+  * Publishes agents unless audience="internal"
+  
