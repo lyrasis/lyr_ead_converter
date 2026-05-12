@@ -488,10 +488,34 @@ class EADConverter < Converter
     end
 
 
+    # Hande odd separately for repository_processing_note placement
+    with 'odd' do |node|
+      if att('type') == 'repository_processing_note'
+        ancestor(:resource, :archival_object) do |obj|
+          set obj, :repository_processing_note, format_content(inner_xml.sub(/<head>.*?<\/head>/m, ''))
+        end
+      else
+        content = inner_xml.tap {|xml| xml.sub!(/<head>.*?<\/head>/m, '')}
+        make :note_multipart, {
+          :type => node.name,
+          :persistent_id => att('id'),
+          :publish => att('audience') != 'internal',
+          :subnotes => {
+            :publish => att('audience') != 'internal',
+            'jsonmodel_type' => 'note_text',
+            'content' => format_content(content)
+         }
+        } do |note|
+          set ancestor(:resource, :archival_object), :notes, note
+        end
+      end
+    end
+
+    # Odd removed and handled above.
     %w(accessrestrict accessrestrict/legalstatus
        accruals acqinfo altformavail appraisal arrangement
        bioghist custodhist
-       fileplan odd otherfindaid originalsloc phystech
+       fileplan otherfindaid originalsloc phystech
        prefercite processinfo relatedmaterial scopecontent
        separatedmaterial userestrict ).each do |note|
       with note do |node|
