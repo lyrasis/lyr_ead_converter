@@ -511,7 +511,7 @@ class EADConverter < Converter
       end
     end
 
-    # Odd removed and handled above.
+    # Odd removed and handled above.  
     %w(accessrestrict accessrestrict/legalstatus
        accruals acqinfo altformavail appraisal arrangement
        bioghist custodhist
@@ -1048,9 +1048,128 @@ class EADConverter < Converter
         obj
       end
     end
+
+    #  # To use att('id') as means of linking to existing DOs:
+    #  # 1. comment out above dao, daodesc, daogrp blocks
+    #  # 2. uncomment blocks below.
+    #  with 'dao' do |*|
+    #   make :instance, {
+    #       :instance_type => 'digital_object'
+    #     } do |instance|
+    #     set ancestor(:resource, :archival_object), :instances, instance
+    #   end
+    
+    #   dao_id = att('id') || SecureRandom.uuid
+    
+    #   # Check for ids created in current EAD import, then database.
+    #   @digital_object_uris ||= {}
+    
+    #   if @digital_object_uris[dao_id]
+    #     set ancestor(:instance), :digital_object, {'ref' => @digital_object_uris[dao_id]}
+    #   elsif (existing = DigitalObject.filter(:digital_object_id => dao_id).first)
+    #     set ancestor(:instance), :digital_object, {'ref' => existing.uri}
+    #   else
+    #     # Change to use id attribute, else UUID.
+    #     make :digital_object, {
+    #            :digital_object_id => dao_id,
+    #            :publish => att('audience') != 'internal',
+    #            :title => att('title', :xlink)
+    #          } do |obj|
+    #       obj.file_versions << {
+    #         :use_statement => att('role', :xlink),
+    #         :file_uri => att('href', :xlink),
+    #         :xlink_actuate_attribute => att('actuate', :xlink),
+    #         :xlink_show_attribute => att('show', :xlink),
+    #         :publish => att('audience') != 'internal',
+    #       }
+    #       set ancestor(:instance), :digital_object, obj
+    #       @digital_object_uris[dao_id] = obj.uri
+    #     end
+    #   end
+    # end
+    
+    # with 'daodesc' do |*|
+    #   make :note_digital_object, {
+    #          :type => 'note',
+    #          :persistent_id => att('id'),
+    #          :publish => att('audience') != 'internal',
+    #          :content => inner_xml.strip
+    #        } do |note|
+    #     set ancestor(:digital_object), :notes, note
+    #   end
+    # end
+    
+    # with 'daogrp' do |*|
+    #   title = att('title', :xlink)
+    
+    #   unless title
+    #     title = ''
+    #     ancestor(:resource, :archival_object ) { |ao|
+    #       display_string = ArchivalObject.produce_display_string(ao)
+    #       display_string = Nokogiri::XML::DocumentFragment.parse(display_string).inner_text
+    #       title << display_string + ' Digital Object'
+    #     }
+    #   end
+    
+    #   dao_id = att('id') || SecureRandom.uuid
+    
+    #   # Check for ids created in current EAD import, then database.
+    #   @digital_object_uris ||= {}
+    
+    #   if @digital_object_uris[dao_id]
+    #     ancestor(:resource, :archival_object) do |ao|
+    #       ao.instances.push({'instance_type' => 'digital_object', 'digital_object' => {'ref' => @digital_object_uris[dao_id]}})
+    #     end
+    #   elsif (existing = DigitalObject.filter(:digital_object_id => dao_id).first)
+    #     ancestor(:resource, :archival_object) do |ao|
+    #       ao.instances.push({'instance_type' => 'digital_object', 'digital_object' => {'ref' => existing.uri}})
+    #     end
+    #   else
+    #     make :digital_object, {
+    #       :digital_object_id => dao_id,
+    #       :title => title,
+    #       :publish => att('audience') != 'internal'
+    #      } do |obj|
+    #       ancestor(:resource, :archival_object) do |ao|
+    #         ao.instances.push({'instance_type' => 'digital_object', 'digital_object' => {'ref' => obj.uri}})
+    #       end
+    
+    #        # Actuate and Show values applicable to <daoloc>s can come from <arc> elements,
+    #        # so daogrp contents need to be handled together
+    #       dg_contents = Nokogiri::XML::DocumentFragment.parse(inner_xml)
+    
+    #        # Hashify arc attrs keyed by xlink:to
+    #       arc_by_to_val = dg_contents.xpath('arc').map {|arc|
+    #         if arc['xlink:to']
+    #           [arc['xlink:to'], arc]
+    #         else
+    #           nil
+    #         end
+    #       }.reject(&:nil?).reduce({}) {|hsh, (k, v)| hsh[k] = v; hsh}
+    
+    #       dg_contents.xpath('daoloc').each do |daoloc|
+    #         arc = arc_by_to_val[daoloc['xlink:label']] || {}
+    
+    #         fv_attrs = {}
+    
+    #         # attrs on <arc>
+    #         fv_attrs[:xlink_show_attribute] = arc['xlink:show'] if arc['xlink:show']
+    #         fv_attrs[:xlink_actuate_attribute] = arc['xlink:actuate'] if arc['xlink:actuate']
+    
+    #         # attrs on <daoloc>
+    #         fv_attrs[:file_uri] = daoloc['xlink:href'] if daoloc['xlink:href']
+    #         fv_attrs[:use_statement] = daoloc['xlink:role'] if daoloc['xlink:role']
+    #         fv_attrs[:publish] = daoloc['audience'] != 'internal'
+    
+    #         obj.file_versions << fv_attrs
+    #       end
+    
+    #       @digital_object_uris[dao_id] = obj.uri
+    #       obj
+    #     end
+    #   end
+    # end
   end
-
-
 
   # Templates Section: change default agent publish behavior.
 
