@@ -1126,9 +1126,24 @@ class EADConverter < Converter
           ao.instances.push({'instance_type' => 'digital_object', 'digital_object' => {'ref' => existing.uri}})
         end
       else
+        digital_object_type = nil
+        first_href = Nokogiri::XML::DocumentFragment.parse(inner_xml).xpath('daoloc').first&.[]('xlink:href')
+        if first_href
+          ext = File.extname(first_href).downcase.delete('.')
+          digital_object_type = case ext
+           when 'pdf', 'pdfa' then 'text'
+           when 'jpeg', 'jpg', 'bmp' then 'still_image'
+           when 'mp3', 'wav' then 'sound_recording'
+           when 'mp4' then 'moving_image'
+           when 'htm', 'html', 'zip', 'ppt' then 'software_multimedia'
+           else nil
+          end
+        end
+
         make :digital_object, {
           :digital_object_id => dao_id,
           :title => title,
+          :digital_object_type => digital_object_type,
           :publish => att('audience') != 'internal'
          } do |obj|
           ancestor(:resource, :archival_object) do |ao|
