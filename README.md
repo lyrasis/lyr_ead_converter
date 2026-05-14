@@ -11,6 +11,7 @@ Current differences from stock ASpace:
 - Publishes agents unless `audience="internal"`
 - Moves `<odd type="repository_processing_note">` to that field in resource and archival_object.
 - Maps @id in `<dao>` and `<daogrp>` to `digital_object_id`. Note that in valid EAD, `<dao id="">` can't start with a number.
-- Includes commented out block for handling `<dao>` and `<daogrp>` to link to existing digital objects via @id value.
+- Includes un-commented out block for handling `<dao>` and `<daogrp>` to link to existing digital objects via @id value (`main` `<dao>`/`<daogrp>` blocks commented out).
   - WARNING: Use with caution!
   - `digital_object_id` must be unique in a repo, but not globally so be sure you are in the correct repo for upload.
+- DEVIATION FROM `main`: creates digital_object_type based on extension mapping
