@@ -164,8 +164,8 @@ class EADConverter < Converter
             title = Nokogiri::XML::DocumentFragment.parse(inner_xml.strip)
             title.xpath(".//unitdate").remove
             obj.title = format_content( title.to_xml(:encoding => 'utf-8') ) if obj.title.nil? || obj.title.empty?
-            obj.title.gsub!(/[,;!?]\s*"\s*$/, '"')
-            obj.title.gsub!(/[,;!?]\s*$/,'')
+            obj.title.gsub!(/[,;!?\/]\s*"\s*$/, '"')
+            obj.title.gsub!(/[,;!?\/]\s*$/,'')
           end
         end
       end
@@ -1136,7 +1136,7 @@ class EADConverter < Converter
            when 'mp3', 'wav' then 'sound_recording'
            when 'mp4' then 'moving_image'
            when 'htm', 'html', 'zip', 'ppt' then 'software_multimedia'
-           else nil
+           else 'still_image'
           end
         end
 

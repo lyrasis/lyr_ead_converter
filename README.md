@@ -15,3 +15,4 @@ Current differences from stock ASpace:
   - WARNING: Use with caution!
   - `digital_object_id` must be unique in a repo, but not globally so be sure you are in the correct repo for upload.
 - DEVIATION FROM `main`: creates digital_object_type based on extension mapping
+- 
